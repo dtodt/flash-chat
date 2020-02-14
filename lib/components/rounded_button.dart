@@ -4,7 +4,7 @@ class RoundedButton extends StatelessWidget {
   const RoundedButton({
     this.color,
     this.label,
-    this.onPressed,
+    @required this.onPressed,
   });
 
   final Color color;
