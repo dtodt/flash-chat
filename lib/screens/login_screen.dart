@@ -33,12 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Hero(
-                child: Container(
-                  height: 200.0,
-                  child: Image.asset('assets/images/logo.png'),
+              Flexible(
+                child: Hero(
+                  child: Container(
+                    height: 200.0,
+                    child: Image.asset('assets/images/logo.png'),
+                  ),
+                  tag: 'logo',
                 ),
-                tag: 'logo',
               ),
               SizedBox(
                 height: 48.0,
