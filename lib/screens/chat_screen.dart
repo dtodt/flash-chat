@@ -14,6 +14,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
   final _store = Firestore.instance;
 
+  final messageTextController = TextEditingController();
+
   FirebaseUser loggedInUser;
   String messageText;
 
@@ -45,28 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            StreamBuilder<QuerySnapshot>(
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.lightBlue,
-                    ),
-                  );
-                }
-                List<Text> messageWidgets = [];
-                final messages = snapshot.data.documents;
-                for (var message in messages) {
-                  final text = message.data['text'];
-                  final sender = message.data['sender'];
-                  messageWidgets.add(Text('$text - $sender'));
-                }
-                return Column(
-                  children: messageWidgets,
-                );
-              },
-              stream: _store.collection('messages').snapshots(),
-            ),
+            MessageStream(store: _store),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -74,6 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
+                      controller: messageTextController,
                       onChanged: (value) {
                         setState(() {
                           messageText = value;
@@ -88,6 +70,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         'text': messageText,
                         'sender': loggedInUser.email,
                       });
+                      messageTextController.clear();
                     },
                     child: Text(
                       'Send',
@@ -115,5 +98,95 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       print(e);
     }
+  }
+}
+
+class MessageStream extends StatelessWidget {
+  const MessageStream({
+    Key key,
+    @required Firestore store,
+  })  : _store = store,
+        super(key: key);
+
+  final Firestore _store;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.lightBlue,
+            ),
+          );
+        }
+        List<MessageBubble> messageBubbles = [];
+        final messages = snapshot.data.documents;
+        for (var message in messages) {
+          final text = message.data['text'];
+          final sender = message.data['sender'];
+          final messageBubble = MessageBubble(text: text, sender: sender);
+          messageBubbles.add(messageBubble);
+        }
+        return Expanded(
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 20.0,
+            ),
+            children: messageBubbles,
+          ),
+        );
+      },
+      stream: _store.collection('messages').snapshots(),
+    );
+  }
+}
+
+class MessageBubble extends StatelessWidget {
+  const MessageBubble({
+    @required this.text,
+    @required this.sender,
+  });
+
+  final String text;
+  final String sender;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          Text(
+            sender,
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 12.0,
+            ),
+          ),
+          Material(
+            borderRadius: BorderRadius.circular(25.0),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 10.0,
+              ),
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.0,
+                ),
+              ),
+            ),
+            color: Colors.lightBlueAccent,
+            elevation: 5.0,
+          ),
+        ],
+      ),
+    );
   }
 }
