@@ -48,6 +48,7 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             MessageStream(
+              currentUser: loggedInUser?.email,
               stream: _store.collection('messages').snapshots(),
             ),
             Container(
@@ -105,9 +106,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
 class MessageStream extends StatelessWidget {
   const MessageStream({
+    this.currentUser,
     @required this.stream,
   });
 
+  final String currentUser;
   final Stream<QuerySnapshot> stream;
 
   @override
@@ -124,9 +127,13 @@ class MessageStream extends StatelessWidget {
         List<MessageBubble> messageBubbles = [];
         final messages = snapshot.data.documents;
         for (var message in messages) {
-          final text = message.data['text'];
-          final sender = message.data['sender'];
-          final messageBubble = MessageBubble(text: text, sender: sender);
+          final String text = message.data['text'];
+          final String sender = message.data['sender'];
+          final messageBubble = MessageBubble(
+            isMe: sender == currentUser,
+            text: text,
+            sender: sender,
+          );
           messageBubbles.add(messageBubble);
         }
         return Expanded(
@@ -146,10 +153,12 @@ class MessageStream extends StatelessWidget {
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
+    @required this.isMe,
     @required this.text,
     @required this.sender,
   });
 
+  final bool isMe;
   final String text;
   final String sender;
 
@@ -158,7 +167,8 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
           Text(
             sender,
@@ -168,7 +178,8 @@ class MessageBubble extends StatelessWidget {
             ),
           ),
           Material(
-            borderRadius: BorderRadius.circular(25.0),
+            borderRadius:
+                isMe ? kBubbleSelfBorderRadius : kBubbleOtherBorderRadius,
             child: Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: 20.0,
@@ -177,12 +188,12 @@ class MessageBubble extends StatelessWidget {
               child: Text(
                 text,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: isMe ? kBubbleSelfTextColor : kBubbleOtherTextColor,
                   fontSize: 15.0,
                 ),
               ),
             ),
-            color: Colors.lightBlueAccent,
+            color: isMe ? kBubbleSelfColor : kBubbleOtherColor,
             elevation: 5.0,
           ),
         ],

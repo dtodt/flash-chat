@@ -32,3 +32,21 @@ const kTextFieldDecoration = InputDecoration(
     borderRadius: BorderRadius.all(Radius.circular(32.0)),
   ),
 );
+
+const kBubbleOtherBorderRadius = BorderRadius.only(
+  topRight: Radius.circular(30.0),
+  bottomLeft: Radius.circular(30.0),
+  bottomRight: Radius.circular(30.0),
+);
+
+const kBubbleOtherColor = Colors.white;
+const kBubbleOtherTextColor = Colors.black54;
+
+const kBubbleSelfBorderRadius = BorderRadius.only(
+  topLeft: Radius.circular(30.0),
+  bottomLeft: Radius.circular(30.0),
+  bottomRight: Radius.circular(30.0),
+);
+
+const kBubbleSelfColor = Colors.lightBlueAccent;
+const kBubbleSelfTextColor = Colors.white;
