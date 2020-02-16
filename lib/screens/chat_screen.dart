@@ -47,7 +47,9 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            MessageStream(store: _store),
+            MessageStream(
+              stream: _store.collection('messages').snapshots(),
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -103,12 +105,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
 class MessageStream extends StatelessWidget {
   const MessageStream({
-    Key key,
-    @required Firestore store,
-  })  : _store = store,
-        super(key: key);
+    @required this.stream,
+  });
 
-  final Firestore _store;
+  final Stream<QuerySnapshot> stream;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +139,7 @@ class MessageStream extends StatelessWidget {
           ),
         );
       },
-      stream: _store.collection('messages').snapshots(),
+      stream: stream,
     );
   }
 }
