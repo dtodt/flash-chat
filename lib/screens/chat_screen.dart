@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash_chat/constants.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -49,7 +50,13 @@ class _ChatScreenState extends State<ChatScreen> {
           children: <Widget>[
             MessageStream(
               currentUser: loggedInUser?.email,
-              stream: _store.collection('messages').snapshots(),
+              stream: _store
+                  .collection('messages')
+                  .orderBy(
+                    'timestamp',
+                    descending: true,
+                  )
+                  .snapshots(),
             ),
             Container(
               decoration: kMessageContainerDecoration,
@@ -72,6 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       _store.collection('messages').add({
                         'text': messageText,
                         'sender': loggedInUser.email,
+                        'timestamp': Timestamp.now(),
                       });
                       messageTextController.clear();
                     },
@@ -138,11 +146,12 @@ class MessageStream extends StatelessWidget {
         }
         return Expanded(
           child: ListView(
+            children: messageBubbles,
             padding: EdgeInsets.symmetric(
               horizontal: 10.0,
               vertical: 20.0,
             ),
-            children: messageBubbles,
+            reverse: true,
           ),
         );
       },
